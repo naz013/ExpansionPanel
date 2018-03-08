@@ -20,6 +20,7 @@
         <activity android:name=".SampleActivityRecycler" />
         <activity android:name=".SampleActivityProgrammatically" />
         <activity android:name=".SampleActivityViewGroup" />
+        <activity android:name=".SampleSaveStateActivity" />
     </application>
 
 </manifest>

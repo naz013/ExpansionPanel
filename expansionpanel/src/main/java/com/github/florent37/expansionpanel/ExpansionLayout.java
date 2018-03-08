@@ -17,6 +17,7 @@ import android.view.ViewTreeObserver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ExpansionLayout extends NestedScrollView {
 
@@ -42,7 +43,7 @@ public class ExpansionLayout extends NestedScrollView {
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         requestDisallowInterceptTouchEvent(true);
-
+        setTag(UUID.randomUUID().toString());
         if (attrs != null) {
             final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ExpansionLayout);
             if (a != null) {
@@ -122,7 +123,7 @@ public class ExpansionLayout extends NestedScrollView {
         onViewAdded();
     }
 
-    private void onViewAdded(){
+    private void onViewAdded() {
         if (getChildCount() != 0) {
             final View childView = getChildAt(0);
             childView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -254,19 +255,39 @@ public class ExpansionLayout extends NestedScrollView {
 
     @Override
     protected Parcelable onSaveInstanceState() {
+        String tag = String.valueOf(getTag());
+
         final Bundle savedInstance = new Bundle();
         savedInstance.putParcelable("super", super.onSaveInstanceState());
-        savedInstance.putBoolean("expanded", expanded);
+
+        StateHolder.add(tag);
+        StateCollection stateCollection = StateHolder.getStateCollection();
+        if (stateCollection == null) stateCollection = new StateCollection();
+        stateCollection.getStateMap().put(tag, new State(expanded));
+        StateHolder.setStateCollection(stateCollection);
+
         return savedInstance;
     }
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        if(state instanceof Bundle){
+        if (state instanceof Bundle) {
             final Bundle savedInstance = (Bundle) state;
-            boolean expanded = savedInstance.getBoolean("expanded");
-            if(expanded){
-               expand(false);
+
+            String tag = StateHolder.take();
+            if (tag == null) tag = String.valueOf(getTag());
+            setTag(tag);
+
+            boolean expanded = this.expanded;
+
+            StateCollection stateCollection = StateHolder.getStateCollection();
+            if (stateCollection != null && stateCollection.getStateMap().containsKey(tag)) {
+                expanded = stateCollection.getStateMap().get(tag).isExpanded();
+            }
+
+            if (expanded) {
+                this.expanded = true;
+                onViewAdded();
             } else {
                 collapse(false);
             }

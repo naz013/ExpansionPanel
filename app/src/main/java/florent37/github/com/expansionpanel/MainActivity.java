@@ -35,4 +35,9 @@ public class MainActivity extends AppCompatActivity {
     public void onRecyclerViewClicked(){
         startActivity(new Intent(this, SampleActivityRecycler.class));
     }
+
+    @OnClick(R.id.save_state)
+    public void onStateClicked(){
+        startActivity(new Intent(this, SampleSaveStateActivity.class));
+    }
 }
